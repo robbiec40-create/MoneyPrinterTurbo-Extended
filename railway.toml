@@ -1,0 +1,16 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "./start.sh"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+# This file configures the Streamlit WebUI service (SERVICE=webui, the
+# default — see start.sh). To deploy the API as a second Railway service
+# from the same repo, add another service in the Railway dashboard
+# pointing at this same Dockerfile and set its SERVICE=api variable; see
+# docs/railway-deployment.md.

@@ -129,6 +129,8 @@ export CHATTERBOX_CFG_WEIGHT=0.3  # Normal speed
 
 The web interface opens at `http://localhost:8501`
 
+**Deploying to Railway:** see [docs/railway-deployment.md](docs/railway-deployment.md).
+
 ## 🔧 Troubleshooting
 
 <details>

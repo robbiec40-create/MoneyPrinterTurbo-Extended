@@ -237,6 +237,11 @@ speech_region = ""
 # Get your API key at https://siliconflow.cn
 api_key = ""
 
+[elevenlabs]
+# ElevenLabs API Key
+# Get your API key at https://elevenlabs.io/app/settings/api-keys
+api_key = ""
+
 [ui]
 # UI related settings
 # 是否隐藏日志信息

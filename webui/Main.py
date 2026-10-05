@@ -877,6 +877,7 @@ with middle_panel:
             ("azure-tts-v2", "Azure TTS V2"),
             ("siliconflow", "SiliconFlow TTS"),
             ("chatterbox", "Chatterbox TTS (Open Source)"),
+            ("elevenlabs", "ElevenLabs TTS"),
         ]
 
         # 获取保存的TTS服务器，默认为v1
@@ -906,6 +907,9 @@ with middle_panel:
         elif selected_tts_server == "chatterbox":
             # 获取Chatterbox的声音列表
             filtered_voices = voice.get_chatterbox_voices()
+        elif selected_tts_server == "elevenlabs":
+            # 获取ElevenLabs的声音列表
+            filtered_voices = voice.get_elevenlabs_voices()
         else:
             # 获取Azure的声音列表
             all_voices = voice.get_all_azure_voices(filter_locals=None)
@@ -1089,6 +1093,31 @@ with middle_panel:
             )
 
             config.siliconflow["api_key"] = siliconflow_api_key
+
+        # 当选择ElevenLabs时，显示API key输入框和说明信息
+        if selected_tts_server == "elevenlabs" or (
+            voice_name and voice.is_elevenlabs_voice(voice_name)
+        ):
+            saved_elevenlabs_api_key = config.elevenlabs.get("api_key", "")
+
+            elevenlabs_api_key = st.text_input(
+                tr("ElevenLabs API Key"),
+                value=saved_elevenlabs_api_key,
+                type="password",
+                key="elevenlabs_api_key_input",
+            )
+
+            st.info(
+                tr("ElevenLabs TTS Settings")
+                + ":\n"
+                + "- "
+                + tr("Speed: Range [0.7, 1.2], default is 1.0")
+                + "\n"
+                + "- "
+                + tr("Get your API key at https://elevenlabs.io/app/settings/api-keys")
+            )
+
+            config.elevenlabs["api_key"] = elevenlabs_api_key
 
         params.voice_volume = st.selectbox(
             tr("Speech Volume"),

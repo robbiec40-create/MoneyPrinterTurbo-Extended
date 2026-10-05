@@ -82,6 +82,39 @@ def get_siliconflow_voices() -> list[str]:
     ]
 
 
+def get_elevenlabs_voices() -> list[str]:
+    """
+    获取 ElevenLabs 的声音列表
+
+    Returns:
+        声音列表，格式为 ["elevenlabs:voice_id:Name-Gender", ...]
+    """
+    # A handful of ElevenLabs' well-known premade voices. Voice IDs are
+    # stable across accounts for these; custom/cloned voices can be added
+    # the same way once you know their voice_id.
+    voices_with_gender = [
+        ("21m00Tcm4TlvDq8ikWAM", "Rachel", "Female"),
+        ("29vD33N1CtxCmqQRPOHJ", "Drew", "Male"),
+        ("EXAVITQu4vr4xnSDxMaL", "Bella", "Female"),
+        ("ErXwobaYiN019PkySvjV", "Antoni", "Male"),
+        ("MF3mGyEYCl7XYWbV9V6O", "Elli", "Female"),
+        ("TxGEqnHWrfWFTfGW9XjX", "Josh", "Male"),
+        ("VR6AewLTigWG4xSOukaG", "Arnold", "Male"),
+        ("pNInz6obpgDQGcFmaJgB", "Adam", "Male"),
+        ("yoZ06aMxZJJ28mfd3POQ", "Sam", "Male"),
+    ]
+
+    return [
+        f"elevenlabs:{voice_id}:{name}-{gender}"
+        for voice_id, name, gender in voices_with_gender
+    ]
+
+
+def is_elevenlabs_voice(voice_name: str):
+    """检查是否是 ElevenLabs 的声音"""
+    return voice_name.startswith("elevenlabs:")
+
+
 def get_chatterbox_voices() -> list[str]:
     """
     获取Chatterbox TTS的声音列表
@@ -1178,6 +1211,15 @@ def tts(
         # Chatterbox TTS with WhisperX timestamps
         # 格式: chatterbox:type:name-Gender
         return chatterbox_tts(text, voice_name, voice_rate, voice_file, voice_volume)
+    elif is_elevenlabs_voice(voice_name):
+        # format: elevenlabs:voice_id:Name-Gender
+        parts = voice_name.split(":")
+        if len(parts) >= 2:
+            voice_id = parts[1]
+            return elevenlabs_tts(text, voice_id, voice_rate, voice_file, voice_volume)
+        else:
+            logger.error(f"Invalid elevenlabs voice name format: {voice_name}")
+            return None
     return azure_tts_v1(text, voice_name, voice_rate, voice_file)
 
 
@@ -1358,6 +1400,130 @@ def siliconflow_tts(
                 )
         except Exception as e:
             logger.error(f"siliconflow tts failed: {str(e)}")
+
+    return None
+
+
+def elevenlabs_tts(
+    text: str,
+    voice_id: str,
+    voice_rate: float,
+    voice_file: str,
+    voice_volume: float = 1.0,
+    model_id: str = "eleven_multilingual_v2",
+) -> Union[SubMaker, None]:
+    """
+    Generate speech using the ElevenLabs API.
+
+    ElevenLabs doesn't return word-level timestamps on the plain
+    text-to-speech endpoint, so subtitle timing is approximated the same
+    way as siliconflow_tts: split the text into sentences and distribute
+    the audio's actual duration across them proportionally to character
+    count.
+
+    Args:
+        text: text to synthesize
+        voice_id: ElevenLabs voice id, e.g. "21m00Tcm4TlvDq8ikWAM"
+        voice_rate: playback speed; clamped to ElevenLabs' supported
+            [0.7, 1.2] range and passed as voice_settings.speed
+        voice_file: output audio file path
+        voice_volume: unused by the ElevenLabs API (no volume/gain param);
+            kept for signature parity with the other *_tts functions
+        model_id: ElevenLabs model, e.g. "eleven_multilingual_v2" or
+            "eleven_turbo_v2_5"
+
+    Returns:
+        SubMaker, or None on failure
+    """
+    text = text.strip()
+    api_key = config.elevenlabs.get("api_key", "")
+
+    if not api_key:
+        logger.error("ElevenLabs API key is not set")
+        return None
+
+    # ElevenLabs' voice_settings.speed only supports roughly [0.7, 1.2]
+    speed = max(0.7, min(1.2, voice_rate))
+
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+    payload = {
+        "text": text,
+        "model_id": model_id,
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.75,
+            "speed": speed,
+        },
+    }
+    headers = {
+        "xi-api-key": api_key,
+        "Content-Type": "application/json",
+        "Accept": "audio/mpeg",
+    }
+
+    for i in range(3):
+        try:
+            logger.info(f"start elevenlabs tts, voice: {voice_id}, try: {i + 1}")
+
+            response = requests.post(url, json=payload, headers=headers, timeout=(30, 120))
+
+            if response.status_code == 200:
+                with open(voice_file, "wb") as f:
+                    f.write(response.content)
+
+                sub_maker = ensure_submaker_compatibility(SubMaker())
+
+                try:
+                    from moviepy import AudioFileClip
+
+                    audio_clip = AudioFileClip(voice_file)
+                    audio_duration = audio_clip.duration
+                    audio_clip.close()
+
+                    audio_duration_100ns = int(audio_duration * 10000000)
+                    sentences = utils.split_string_by_punctuations(text)
+
+                    if sentences:
+                        total_chars = sum(len(s) for s in sentences)
+                        char_duration = (
+                            audio_duration_100ns / total_chars if total_chars > 0 else 0
+                        )
+
+                        current_offset = 0
+                        for sentence in sentences:
+                            if not sentence.strip():
+                                continue
+
+                            sentence_duration = int(len(sentence) * char_duration)
+                            sub_maker.subs.append(sentence)
+                            sub_maker.offset.append(
+                                (current_offset, current_offset + sentence_duration)
+                            )
+                            current_offset += sentence_duration
+                    else:
+                        sub_maker.subs = [text]
+                        sub_maker.offset = [(0, audio_duration_100ns)]
+
+                except Exception as e:
+                    logger.warning(f"Failed to create accurate subtitles: {str(e)}")
+                    sub_maker.subs = [text]
+                    sub_maker.offset = [
+                        (
+                            0,
+                            audio_duration_100ns
+                            if "audio_duration_100ns" in locals()
+                            else 10000000,
+                        )
+                    ]
+
+                logger.success(f"elevenlabs tts succeeded: {voice_file}")
+                return sub_maker
+            else:
+                logger.error(
+                    f"elevenlabs tts failed with status code {response.status_code}: {response.text}"
+                )
+        except Exception as e:
+            logger.error(f"elevenlabs tts failed: {str(e)}")
 
     return None
 

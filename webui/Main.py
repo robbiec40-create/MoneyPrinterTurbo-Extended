@@ -870,6 +870,20 @@ with middle_panel:
             options=[1, 2, 3, 4, 5],
             index=0,
         )
+
+        output_resolution_options = [
+            (tr("Native (1080p+)"), None),
+            (tr("Lower (750px short side, faster/smaller)"), 750),
+        ]
+        selected_res_index = st.selectbox(
+            tr("Output Resolution"),
+            options=range(len(output_resolution_options)),
+            format_func=lambda x: output_resolution_options[x][0],
+            index=0,
+        )
+        params.output_resolution_short_side = output_resolution_options[
+            selected_res_index
+        ][1]
         
         # Show warning for multiple videos with semantic mode
         if params.video_count > 1 and params.video_concat_mode.value == "semantic":

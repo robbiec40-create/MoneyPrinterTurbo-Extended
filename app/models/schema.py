@@ -82,6 +82,14 @@ class VideoParams(BaseModel):
     video_clip_duration: Optional[int] = 5
     video_count: Optional[int] = 1
 
+    # Scale the final rendered video's short side (width for portrait,
+    # height for landscape) down to this many pixels, preserving aspect
+    # ratio - e.g. 750 on a 9:16 video exports at 750x1334 instead of the
+    # native 1080x1920. None/0 = export at native resolution (unchanged
+    # default). This only affects the final export, not stock-footage
+    # search/matching, so it doesn't risk breaking Pexels/Pixabay lookups.
+    output_resolution_short_side: Optional[int] = None
+
     video_source: Optional[str] = "pexels"
     video_materials: Optional[List[MaterialInfo]] = (
         None  # Materials used to generate the video

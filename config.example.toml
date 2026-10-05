@@ -283,11 +283,18 @@ ig_user_id = ""  # Instagram Business Account ID
 # human input. See docs/scheduled-publishing.md for how to actually
 # schedule it (Railway Cron Job, OS cron, etc.) - this section only
 # configures what each run does, not when it runs.
+#
+# `theme` here is just the fallback when no --theme CLI argument is
+# given. Running 3 themes (e.g. political satire / educational /
+# bedtime stories) each on their own 3x/week cadence means 3 separate
+# cron schedules all pointing at this same script with their own
+# --theme argument - see docs/scheduled-publishing.md.
 theme = "political satire"
 video_source = "pexels"
 voice_name = ""  # empty = whatever generate_script's language default picks
 video_aspect = "9:16"  # portrait; see VideoAspect in app/models/schema.py
 paragraph_number = 1
+output_resolution_short_side = 750  # see [app] docs above; None/0 = native 1080p+
 youtube_auto_publish = true
 youtube_privacy_status = "public"
 instagram_auto_publish = true

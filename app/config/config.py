@@ -49,6 +49,7 @@ proxy = _cfg.get("proxy", {})
 azure = _cfg.get("azure", {})
 siliconflow = _cfg.get("siliconflow", {})
 elevenlabs = _cfg.get("elevenlabs", {})
+youtube = _cfg.get("youtube", {})
 ui = _cfg.get(
     "ui",
     {

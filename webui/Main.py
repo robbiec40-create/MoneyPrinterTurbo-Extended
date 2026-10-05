@@ -1170,6 +1170,44 @@ with middle_panel:
             index=2,
         )
 
+    with st.container(border=True):
+        st.write(tr("Publishing"))
+        params.youtube_auto_publish = st.checkbox(
+            tr("Auto-publish to YouTube"), value=False
+        )
+        if params.youtube_auto_publish:
+            st.info(
+                tr("YouTube Publishing Requires Setup")
+                + ": docs/youtube-publishing.md ("
+                + tr("one-time OAuth setup")
+                + ")"
+            )
+            params.youtube_title = st.text_input(
+                tr("YouTube Title"),
+                value="",
+                placeholder=tr("Defaults to Video Subject if empty"),
+            )
+            params.youtube_description = st.text_area(
+                tr("YouTube Description"),
+                value="",
+                placeholder=tr("Defaults to the generated script if empty"),
+            )
+            youtube_tags_input = st.text_input(
+                tr("YouTube Tags (comma-separated)"), value=""
+            )
+            params.youtube_tags = [
+                t.strip() for t in youtube_tags_input.split(",") if t.strip()
+            ] or None
+            privacy_options = ["public", "unlisted", "private"]
+            params.youtube_privacy_status = st.selectbox(
+                tr("YouTube Privacy Status"),
+                options=privacy_options,
+                index=0,
+            )
+            params.youtube_made_for_kids = st.checkbox(
+                tr("Made for Kids (COPPA)"), value=False
+            )
+
 with right_panel:
     with st.container(border=True):
         st.write(tr("Subtitle Settings"))
@@ -1292,6 +1330,14 @@ if start_button:
 
     if params.video_source == "coverr" and not config.app.get("coverr_api_keys", ""):
         st.error(tr("Please Enter the Coverr API Key"))
+        scroll_to_bottom()
+        st.stop()
+
+    if params.youtube_auto_publish and not config.youtube.get("token_file", ""):
+        st.error(
+            tr("YouTube Auto-publish Enabled but Not Configured")
+            + " - docs/youtube-publishing.md"
+        )
         scroll_to_bottom()
         st.stop()
 

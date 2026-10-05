@@ -253,6 +253,13 @@ api_key = ""
 # Get your API key at https://elevenlabs.io/app/settings/api-keys
 api_key = ""
 
+[youtube]
+# Auto-publishing a finished video to YouTube. See docs/youtube-publishing.md
+# for the full one-time setup (Google Cloud OAuth app + scripts/youtube_auth.py).
+# Both files below are produced by that setup, not written by hand.
+client_secrets_file = ""  # path to client_secret.json from Google Cloud Console
+token_file = ""           # path to token.json produced by scripts/youtube_auth.py
+
 [ui]
 # UI related settings
 # 是否隐藏日志信息

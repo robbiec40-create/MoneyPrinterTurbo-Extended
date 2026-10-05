@@ -130,6 +130,15 @@ class VideoParams(BaseModel):
     n_threads: Optional[int] = 2
     paragraph_number: Optional[int] = 1
 
+    # YouTube auto-publish settings (see docs/youtube-publishing.md for the
+    # one-time OAuth setup this depends on)
+    youtube_auto_publish: Optional[bool] = False
+    youtube_title: Optional[str] = ""  # falls back to video_subject if empty
+    youtube_description: Optional[str] = ""
+    youtube_tags: Optional[List[str]] = None
+    youtube_privacy_status: Optional[str] = "public"  # "public", "unlisted", "private"
+    youtube_made_for_kids: Optional[bool] = False
+
 
 class SubtitleRequest(BaseModel):
     video_script: str

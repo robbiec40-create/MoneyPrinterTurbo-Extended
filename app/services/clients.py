@@ -18,6 +18,13 @@ from app.config import config
 class ClientConfig(TypedDict, total=False):
     id: str
     theme: str
+    # Informational only - NOT enforced by this script. Actual frequency
+    # is however many cron/Railway Cron entries you set up for this
+    # client (e.g. one entry = 1/day, two entries at different times =
+    # 2/day, Mon/Wed/Fri = 3/week). This field exists so the pricing
+    # tier is recorded somewhere next to the client's other settings,
+    # for your own bookkeeping - see docs/multi-client-publishing.md.
+    videos_per_day: float
     # Publishing credentials - all optional; a client with neither set
     # just doesn't get that platform's auto-publish.
     youtube_token_file: str

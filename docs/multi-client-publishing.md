@@ -83,19 +83,40 @@ paragraph_number = 1
 output_resolution_short_side = 750
 ```
 
-## Scheduling each client
+## Scheduling each client (and pricing tiers)
 
-One cron/Railway Cron entry per client, using `--client` instead of
-`--theme`:
+**A client's frequency/tier is entirely a matter of how many
+cron/Railway Cron entries you set up for them** - there's no count or
+frequency flag on the script itself. Each entry just runs:
 
 ```bash
 python scripts/scheduled_video_job.py --client client1
 ```
 
-See `docs/scheduled-publishing.md`'s Railway Cron / OS cron tables for
-the actual schedule syntax (UTC conversion, DST caveat, etc.) - the only
-difference here is the Start Command uses `--client <id>` instead of
-`--theme "..."`.
+This was verified to work correctly run back-to-back for the same
+client: each run gets its own task ID (no collisions), and topic
+history is re-read fresh each invocation, so the Nth run of the day
+correctly avoids repeating what the 1st through (N-1)th runs already
+picked - there's no in-memory state carried between runs to worry
+about, since each invocation is a separate process.
+
+| Tier | Cadence | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
+|---|---|---|
+| Basic | 3x/week | One entry: `0 12 * * 1,3,5` |
+| Standard | 1x/day | One entry: `0 12 * * *` |
+| Pro | 2x/day | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+
+For Railway, each entry is its own Cron Job service (all pointing at
+this same client's `--client <id>` Start Command). For OS cron, they're
+just additional lines in the crontab. See `docs/scheduled-publishing.md`
+for the full Railway/OS cron setup and the UTC/DST conversion details -
+nothing about multi-entry scheduling is different there, you're just
+adding more entries per client instead of one.
+
+Set `videos_per_day` in that client's `[[clients]]` block to whatever
+their tier implies (e.g. `0.43` for 3x/week, `1` or `2`) - this is
+**informational only**, so you have the tier recorded next to the
+client's other settings; it does not create schedules by itself.
 
 ## How this differs from single-owner mode under the hood
 

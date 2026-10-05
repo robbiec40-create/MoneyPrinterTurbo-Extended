@@ -100,11 +100,18 @@ correctly avoids repeating what the 1st through (N-1)th runs already
 picked - there's no in-memory state carried between runs to worry
 about, since each invocation is a separate process.
 
-| Tier | Cadence | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
-|---|---|---|
-| Basic | 3x/week | One entry: `0 12 * * 1,3,5` |
-| Standard | 1x/day | One entry: `0 12 * * *` |
-| Pro | 2x/day | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+| Tier | Cadence | Price | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
+|---|---|---|---|
+| Basic | 3x/week | $25/mo | One entry: `0 12 * * 1,3,5` |
+| Standard | 1x/day | TBD | One entry: `0 12 * * *` |
+| Pro | 2x/day | TBD | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+
+Margin is essentially unaffected by price within this range - variable
+cost per video is a fraction of a cent (see the per-video cost
+breakdown discussed when this pricing was set), so $25 vs $35 for the
+Basic tier is a competitiveness decision, not a cost one. Fill in
+Standard/Pro pricing here once decided, and record it per-client via
+`monthly_price_usd` in that client's `[[clients]]` block.
 
 For Railway, each entry is its own Cron Job service (all pointing at
 this same client's `--client <id>` Start Command). For OS cron, they're

@@ -321,6 +321,7 @@ topic_history_size = 20
 # id = "client1"                                   # matches --client client1
 # theme = "political satire"
 # videos_per_day = 0.43  # informational only (3/week) - see docs/multi-client-publishing.md
+# monthly_price_usd = 25  # informational only - what this client pays you per month
 # youtube_token_file = "credentials/client1_youtube_token.json"
 # youtube_privacy_status = "public"
 # instagram_access_token = "..."

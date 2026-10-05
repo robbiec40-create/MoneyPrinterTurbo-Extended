@@ -25,6 +25,10 @@ class ClientConfig(TypedDict, total=False):
     # tier is recorded somewhere next to the client's other settings,
     # for your own bookkeeping - see docs/multi-client-publishing.md.
     videos_per_day: float
+    # Informational only, same as videos_per_day - not read by the
+    # script, just kept next to the client's other settings for your
+    # own bookkeeping/reference.
+    monthly_price_usd: float
     # Publishing credentials - all optional; a client with neither set
     # just doesn't get that platform's auto-publish.
     youtube_token_file: str

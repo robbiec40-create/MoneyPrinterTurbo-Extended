@@ -489,6 +489,12 @@ if not config.app.get("hide_config", False):
             )
             save_keys_to_config("pixabay_api_keys", pixabay_api_key)
 
+            coverr_api_key = get_keys_from_config("coverr_api_keys")
+            coverr_api_key = st.text_input(
+                tr("Coverr API Key"), value=coverr_api_key, type="password"
+            )
+            save_keys_to_config("coverr_api_keys", coverr_api_key)
+
 llm_provider = config.app.get("llm_provider", "").lower()
 panel = st.columns(3)
 left_panel = panel[0]
@@ -570,6 +576,7 @@ with middle_panel:
         video_sources = [
             (tr("Pexels"), "pexels"),
             (tr("Pixabay"), "pixabay"),
+            (tr("Coverr"), "coverr"),
             (tr("Local file"), "local"),
             (tr("TikTok"), "douyin"),
             (tr("Bilibili"), "bilibili"),
@@ -1268,7 +1275,7 @@ if start_button:
         scroll_to_bottom()
         st.stop()
 
-    if params.video_source not in ["pexels", "pixabay", "local"]:
+    if params.video_source not in ["pexels", "pixabay", "coverr", "local"]:
         st.error(tr("Please Select a Valid Video Source"))
         scroll_to_bottom()
         st.stop()
@@ -1280,6 +1287,11 @@ if start_button:
 
     if params.video_source == "pixabay" and not config.app.get("pixabay_api_keys", ""):
         st.error(tr("Please Enter the Pixabay API Key"))
+        scroll_to_bottom()
+        st.stop()
+
+    if params.video_source == "coverr" and not config.app.get("coverr_api_keys", ""):
+        st.error(tr("Please Enter the Coverr API Key"))
         scroll_to_bottom()
         st.stop()
 

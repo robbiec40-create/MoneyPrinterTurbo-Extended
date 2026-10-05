@@ -155,6 +155,81 @@ def search_videos_pixabay(
     return []
 
 
+def search_videos_coverr(
+    search_term: str,
+    minimum_duration: int,
+    video_aspect: VideoAspect = VideoAspect.portrait,
+) -> List[MaterialInfo]:
+    """
+    Search Coverr (https://coverr.co) for stock video clips.
+
+    NOTE: unlike the Pexels/Pixabay integrations above, this was written
+    against a single example response shown on Coverr's marketing page
+    (https://coverr.co/developers), not a verified API reference — their
+    docs site 404s on the actual endpoint reference at the time this was
+    written. The response shape below (`hits`, `sources`/`urls` holding
+    download links) is inferred, not confirmed against a live API key.
+    If Coverr changes the field names or this guess is wrong, this will
+    return no results (logged as an error) rather than crash.
+
+    Coverr's free tier requires attribution (their logo, linked) unless
+    you're on a paid plan - see https://coverr.co/license.
+    """
+    aspect = VideoAspect(video_aspect)
+    video_width, video_height = aspect.to_resolution()
+    api_key = get_api_key("coverr_api_keys")
+
+    params = {
+        "query": search_term,
+        "page_size": 20,
+    }
+    headers = {"x-api-key": api_key}
+    query_url = f"https://api.coverr.co/videos?{urlencode(params)}"
+    logger.info(f"searching videos: {query_url}, with proxies: {config.proxy}")
+
+    try:
+        r = requests.get(
+            query_url,
+            headers=headers,
+            proxies=config.proxy,
+            timeout=(30, 60),
+        )
+        response = r.json()
+        video_items = []
+        if "hits" not in response:
+            logger.error(f"search videos failed: {response}")
+            return video_items
+        videos = response["hits"]
+        for v in videos:
+            duration = v.get("duration", 0)
+            if duration and duration < minimum_duration:
+                continue
+
+            # Best-guess download URL field; Coverr's example response was
+            # truncated before showing it. Try the shapes a video-API like
+            # this commonly uses, in order, before giving up on this item.
+            download_url = (
+                v.get("urls", {}).get("mp4")
+                if isinstance(v.get("urls"), dict)
+                else None
+            ) or v.get("download_url") or v.get("source") or v.get("url")
+            if not download_url:
+                continue
+
+            item = MaterialInfo()
+            item.provider = "coverr"
+            item.url = download_url
+            item.duration = duration or minimum_duration
+            if v.get("thumbnail"):
+                item.thumbnail_url = v["thumbnail"]
+            video_items.append(item)
+        return video_items
+    except Exception as e:
+        logger.error(f"search videos failed: {str(e)}")
+
+    return []
+
+
 def save_video(video_url: str, save_dir: str = "", search_term: str = "", thumbnail_url: str = "", preview_images: list = None) -> str:
     if not save_dir:
         save_dir = utils.storage_dir("cache_videos")
@@ -235,6 +310,8 @@ def download_videos(
     search_videos = search_videos_pexels
     if source == "pixabay":
         search_videos = search_videos_pixabay
+    elif source == "coverr":
+        search_videos = search_videos_coverr
 
     # Global URL tracking to prevent duplicates across all search terms
     global_video_urls = set()

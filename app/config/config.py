@@ -50,6 +50,7 @@ azure = _cfg.get("azure", {})
 siliconflow = _cfg.get("siliconflow", {})
 elevenlabs = _cfg.get("elevenlabs", {})
 youtube = _cfg.get("youtube", {})
+instagram = _cfg.get("instagram", {})
 ui = _cfg.get(
     "ui",
     {

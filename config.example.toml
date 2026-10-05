@@ -1,6 +1,12 @@
 [app]
 video_source = "pexels" # "pexels", "pixabay" or "coverr"
 
+# Public HTTPS URL this app's FastAPI server (main.py) is reachable at -
+# e.g. your Railway domain. Required for Instagram auto-publish, since
+# Instagram's API fetches the video from a public URL rather than
+# accepting a file upload. See docs/instagram-publishing.md.
+public_base_url = ""
+
 # 是否隐藏配置面板
 hide_config = false
 
@@ -259,6 +265,17 @@ api_key = ""
 # Both files below are produced by that setup, not written by hand.
 client_secrets_file = ""  # path to client_secret.json from Google Cloud Console
 token_file = ""           # path to token.json produced by scripts/youtube_auth.py
+
+[instagram]
+# Auto-publishing a finished video to Instagram as a Reel. See
+# docs/instagram-publishing.md for the full one-time setup
+# (Meta app + Business account + scripts/instagram_auth.py).
+# Both values below come from that setup, not written by hand.
+# NOTE: unlike youtube's token.json, this access_token expires after
+# ~60 days and needs to be refreshed periodically by re-running
+# scripts/instagram_auth.py.
+access_token = ""
+ig_user_id = ""  # Instagram Business Account ID
 
 [ui]
 # UI related settings

@@ -1208,6 +1208,22 @@ with middle_panel:
                 tr("Made for Kids (COPPA)"), value=False
             )
 
+        params.instagram_auto_publish = st.checkbox(
+            tr("Auto-publish to Instagram (Reel)"), value=False
+        )
+        if params.instagram_auto_publish:
+            st.info(
+                tr("Instagram Publishing Requires Setup")
+                + ": docs/instagram-publishing.md ("
+                + tr("one-time setup")
+                + ")"
+            )
+            params.instagram_caption = st.text_area(
+                tr("Instagram Caption"),
+                value="",
+                placeholder=tr("Defaults to Video Subject if empty"),
+            )
+
 with right_panel:
     with st.container(border=True):
         st.write(tr("Subtitle Settings"))
@@ -1337,6 +1353,18 @@ if start_button:
         st.error(
             tr("YouTube Auto-publish Enabled but Not Configured")
             + " - docs/youtube-publishing.md"
+        )
+        scroll_to_bottom()
+        st.stop()
+
+    if params.instagram_auto_publish and (
+        not config.instagram.get("access_token", "")
+        or not config.instagram.get("ig_user_id", "")
+        or not config.app.get("public_base_url", "")
+    ):
+        st.error(
+            tr("Instagram Auto-publish Enabled but Not Configured")
+            + " - docs/instagram-publishing.md"
         )
         scroll_to_bottom()
         st.stop()

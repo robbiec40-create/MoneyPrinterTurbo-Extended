@@ -10,6 +10,7 @@ from app.config import config
 from app.models import const
 from app.models.schema import VideoConcatMode, VideoParams
 from app.services import llm, material, subtitle, video, voice
+from app.services.publish import instagram as instagram_publish
 from app.services.publish import youtube as youtube_publish
 from app.services import state as sm
 from app.utils import utils
@@ -281,6 +282,26 @@ def publish_videos_to_youtube(
     return youtube_video_ids
 
 
+def publish_videos_to_instagram(
+    task_id, params: VideoParams, final_video_paths
+) -> List[Optional[str]]:
+    """
+    Publish each rendered video to Instagram as a Reel, if auto-publish is
+    enabled. Same failure handling as publish_videos_to_youtube: a failed
+    publish is logged and skipped, never fails the task.
+    """
+    if not params.instagram_auto_publish:
+        return [None] * len(final_video_paths)
+
+    caption = params.instagram_caption or params.video_subject
+
+    instagram_media_ids = []
+    for video_path in final_video_paths:
+        media_id = instagram_publish.upload_reel(video_path, caption=caption)
+        instagram_media_ids.append(media_id)
+    return instagram_media_ids
+
+
 def start(task_id, params: VideoParams, stop_at: str = "video"):
     logger.info(f"start task: {task_id}, stop_at: {stop_at}")
     sm.state.update_task(task_id, state=const.TASK_STATE_PROCESSING, progress=5)
@@ -390,6 +411,9 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
     youtube_video_ids = publish_videos_to_youtube(
         task_id, params, final_video_paths, video_script
     )
+    instagram_media_ids = publish_videos_to_instagram(
+        task_id, params, final_video_paths
+    )
 
     kwargs = {
         "videos": final_video_paths,
@@ -401,6 +425,7 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
         "subtitle_path": subtitle_path,
         "materials": downloaded_videos,
         "youtube_video_ids": youtube_video_ids,
+        "instagram_media_ids": instagram_media_ids,
     }
     sm.state.update_task(
         task_id, state=const.TASK_STATE_COMPLETE, progress=100, **kwargs

@@ -139,6 +139,12 @@ class VideoParams(BaseModel):
     youtube_privacy_status: Optional[str] = "public"  # "public", "unlisted", "private"
     youtube_made_for_kids: Optional[bool] = False
 
+    # Instagram auto-publish settings (see docs/instagram-publishing.md).
+    # Instagram Reels have no privacy/unlisted option via the API - a
+    # published Reel is public - and no made_for_kids equivalent.
+    instagram_auto_publish: Optional[bool] = False
+    instagram_caption: Optional[str] = ""  # falls back to video_subject if empty
+
 
 class SubtitleRequest(BaseModel):
     video_script: str

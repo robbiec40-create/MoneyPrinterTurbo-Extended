@@ -277,6 +277,23 @@ token_file = ""           # path to token.json produced by scripts/youtube_auth.
 access_token = ""
 ig_user_id = ""  # Instagram Business Account ID
 
+[scheduler]
+# Defaults for scripts/scheduled_video_job.py - a fully unattended run
+# that picks its own topic and generates + publishes a video with no
+# human input. See docs/scheduled-publishing.md for how to actually
+# schedule it (Railway Cron Job, OS cron, etc.) - this section only
+# configures what each run does, not when it runs.
+theme = "political satire"
+video_source = "pexels"
+voice_name = ""  # empty = whatever generate_script's language default picks
+video_aspect = "9:16"  # portrait; see VideoAspect in app/models/schema.py
+paragraph_number = 1
+youtube_auto_publish = true
+youtube_privacy_status = "public"
+instagram_auto_publish = true
+# How many recent topics to tell the LLM to avoid repeating
+topic_history_size = 20
+
 [ui]
 # UI related settings
 # 是否隐藏日志信息

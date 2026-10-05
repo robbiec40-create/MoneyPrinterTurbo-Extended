@@ -51,6 +51,7 @@ siliconflow = _cfg.get("siliconflow", {})
 elevenlabs = _cfg.get("elevenlabs", {})
 youtube = _cfg.get("youtube", {})
 instagram = _cfg.get("instagram", {})
+scheduler = _cfg.get("scheduler", {})
 ui = _cfg.get(
     "ui",
     {

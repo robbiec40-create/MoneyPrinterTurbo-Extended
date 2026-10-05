@@ -13,6 +13,17 @@ from app.config import config
 
 _max_retries = 5
 
+# OpenAI-compatible providers: name -> (default base_url, default model_name)
+_OPENAI_COMPATIBLE_PROVIDERS = {
+    "groq": ("https://api.groq.com/openai/v1", "llama-3.3-70b-versatile"),
+    "openrouter": ("https://openrouter.ai/api/v1", "openai/gpt-4o-mini"),
+    "mistral": ("https://api.mistral.ai/v1", "mistral-small-latest"),
+    "together": (
+        "https://api.together.xyz/v1",
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+    ),
+}
+
 
 def _generate_response(prompt: str) -> str:
     try:
@@ -74,6 +85,13 @@ def _generate_response(prompt: str) -> str:
                 base_url = config.app.get("deepseek_base_url")
                 if not base_url:
                     base_url = "https://api.deepseek.com"
+            elif llm_provider in _OPENAI_COMPATIBLE_PROVIDERS:
+                default_base_url, default_model = _OPENAI_COMPATIBLE_PROVIDERS[
+                    llm_provider
+                ]
+                api_key = config.app.get(f"{llm_provider}_api_key")
+                model_name = config.app.get(f"{llm_provider}_model_name") or default_model
+                base_url = config.app.get(f"{llm_provider}_base_url") or default_base_url
             elif llm_provider == "ernie":
                 api_key = config.app.get("ernie_api_key")
                 secret_key = config.app.get("ernie_secret_key")

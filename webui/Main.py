@@ -238,6 +238,10 @@ if not config.app.get("hide_config", False):
                 "Cloudflare",
                 "ERNIE",
                 "Pollinations",
+                "Groq",
+                "OpenRouter",
+                "Mistral",
+                "Together",
             ]
             saved_llm_provider = config.app.get("llm_provider", "OpenAI").lower()
             saved_llm_provider_index = 0
@@ -391,6 +395,28 @@ if not config.app.get("hide_config", False):
                             - **API Key**: Optional - Leave empty for public access
                             - **Base Url**: Default is https://text.pollinations.ai/openai
                             - **Model Name**: Use 'openai-fast' or specify a model name
+                            """
+
+            openai_compatible_tips = {
+                "groq": ("Groq", "https://console.groq.com/keys", "https://api.groq.com/openai/v1", "llama-3.3-70b-versatile"),
+                "openrouter": ("OpenRouter", "https://openrouter.ai/keys", "https://openrouter.ai/api/v1", "openai/gpt-4o-mini"),
+                "mistral": ("Mistral", "https://console.mistral.ai/api-keys", "https://api.mistral.ai/v1", "mistral-small-latest"),
+                "together": ("Together AI", "https://api.together.xyz/settings/api-keys", "https://api.together.xyz/v1", "meta-llama/Llama-3.3-70B-Instruct-Turbo"),
+            }
+            if llm_provider in openai_compatible_tips:
+                name, key_url, default_url, default_model = openai_compatible_tips[
+                    llm_provider
+                ]
+                if not llm_model_name:
+                    llm_model_name = default_model
+                if not llm_base_url:
+                    llm_base_url = default_url
+                with llm_helper:
+                    tips = f"""
+                            ##### {name} Configuration
+                            - **API Key**: [Get one here]({key_url})
+                            - **Base Url**: Default is {default_url}
+                            - **Model Name**: e.g. {default_model}
                             """
 
             if tips and config.ui["language"] == "zh":

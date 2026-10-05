@@ -99,6 +99,30 @@ deepseek_api_key = ""
 deepseek_base_url = "https://api.deepseek.com"
 deepseek_model_name = "deepseek-chat"
 
+########## Groq API Key
+# Visit https://console.groq.com/keys to get your API key
+groq_api_key = ""
+groq_base_url = "https://api.groq.com/openai/v1"
+groq_model_name = "llama-3.3-70b-versatile"
+
+########## OpenRouter API Key
+# Visit https://openrouter.ai/keys to get your API key
+openrouter_api_key = ""
+openrouter_base_url = "https://openrouter.ai/api/v1"
+openrouter_model_name = "openai/gpt-4o-mini"
+
+########## Mistral API Key
+# Visit https://console.mistral.ai/api-keys to get your API key
+mistral_api_key = ""
+mistral_base_url = "https://api.mistral.ai/v1"
+mistral_model_name = "mistral-small-latest"
+
+########## Together AI API Key
+# Visit https://api.together.xyz/settings/api-keys to get your API key
+together_api_key = ""
+together_base_url = "https://api.together.xyz/v1"
+together_model_name = "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+
 # Subtitle Provider, "edge" or "whisper"
 # If empty, the subtitle will not be generated
 subtitle_provider = "edge"

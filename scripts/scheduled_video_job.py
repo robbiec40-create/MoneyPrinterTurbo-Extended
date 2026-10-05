@@ -62,7 +62,7 @@ def main() -> int:
     params = VideoParams(
         video_subject=topic,
         video_source=sched.get("video_source", "pexels"),
-        voice_name=sched.get("voice_name", ""),
+        voice_name=sched.get("voice_name", "en-US-AriaNeural-Female"),
         video_aspect=sched.get("video_aspect", "9:16"),  # VideoAspect.portrait
         paragraph_number=sched.get("paragraph_number", 1),
         output_resolution_short_side=sched.get("output_resolution_short_side"),

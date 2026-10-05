@@ -291,7 +291,11 @@ ig_user_id = ""  # Instagram Business Account ID
 # --theme argument - see docs/scheduled-publishing.md.
 theme = "political satire"
 video_source = "pexels"
-voice_name = ""  # empty = whatever generate_script's language default picks
+# en-US-AriaNeural-Female = free Edge TTS (no API key, no per-character
+# cost) - deliberately NOT an elevenlabs:... voice, to keep this $0/mo.
+# See docs/scheduled-publishing.md's cost note if you want ElevenLabs'
+# better voice quality instead, for ~$5/mo.
+voice_name = "en-US-AriaNeural-Female"
 video_aspect = "9:16"  # portrait; see VideoAspect in app/models/schema.py
 paragraph_number = 1
 output_resolution_short_side = 750  # see [app] docs above; None/0 = native 1080p+

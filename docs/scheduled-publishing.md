@@ -136,6 +136,34 @@ searched for, so it can't cause Pexels/Pixabay searches to come up
 empty. Set it to `0` or remove it to export at native resolution
 (1080p+) instead.
 
+## Running at $0/mo variable cost
+
+The defaults in `config.example.toml`'s `[scheduler]` are chosen to run
+at zero per-video API cost:
+
+- **TTS**: `voice_name = "en-US-AriaNeural-Female"` - free Microsoft
+  Edge TTS, no API key, no per-character charge. This is a deliberate
+  choice over an `elevenlabs:...` voice (~$5/mo minimum for commercial
+  use - see `docs/youtube-publishing.md`'s sibling cost discussion) -
+  Edge TTS sounds noticeably more robotic/generic in exchange for being
+  free. Swap `voice_name` to an `elevenlabs:...` voice (see
+  `voice.get_elevenlabs_voices()`) if voice quality matters more to you
+  than the ~$5/mo.
+- **LLM** (`generate_topic_idea`/`generate_script`): controlled by the
+  global `[app].llm_provider` setting, not `[scheduler]` - this script
+  doesn't override it. For $0 cost, point it at `ollama` (self-hosted,
+  free, but needs compute to run the model) or `g4f` (free, unofficial,
+  less reliable) rather than a metered provider like `openai`/`groq`/
+  `mistral`/etc.
+- **Stock footage** (Pexels/Pixabay/Coverr): already free-tier, no
+  change needed.
+
+What this doesn't cover: whatever you're paying for compute itself
+(Railway's own usage-based pricing for running the render and the Cron
+Job services) - that's a hosting cost, not a per-video API cost, and
+scales with render time/frequency rather than with any of the settings
+above.
+
 ## Failure behavior
 
 - If topic generation or the video render itself fails, the script exits

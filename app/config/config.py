@@ -52,6 +52,7 @@ elevenlabs = _cfg.get("elevenlabs", {})
 youtube = _cfg.get("youtube", {})
 instagram = _cfg.get("instagram", {})
 scheduler = _cfg.get("scheduler", {})
+clients = _cfg.get("clients", [])  # list of dicts; see app/services/clients.py
 ui = _cfg.get(
     "ui",
     {

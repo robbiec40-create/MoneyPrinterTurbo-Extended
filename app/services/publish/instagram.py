@@ -79,10 +79,9 @@ def _build_public_video_url(video_path: str) -> str:
     return f"{public_base_url}/tasks/{rel_path}"
 
 
-def _create_media_container(video_url: str, caption: str) -> Optional[str]:
-    ig_user_id = config.instagram.get("ig_user_id", "")
-    access_token = config.instagram.get("access_token", "")
-
+def _create_media_container(
+    video_url: str, caption: str, ig_user_id: str, access_token: str
+) -> Optional[str]:
     resp = requests.post(
         f"{GRAPH_API_BASE}/{ig_user_id}/media",
         data={
@@ -100,8 +99,7 @@ def _create_media_container(video_url: str, caption: str) -> Optional[str]:
     return data["id"]
 
 
-def _wait_for_container(container_id: str) -> bool:
-    access_token = config.instagram.get("access_token", "")
+def _wait_for_container(container_id: str, access_token: str) -> bool:
     deadline = time.monotonic() + CONTAINER_POLL_TIMEOUT_SECONDS
 
     while time.monotonic() < deadline:
@@ -129,10 +127,9 @@ def _wait_for_container(container_id: str) -> bool:
     return False
 
 
-def _publish_container(container_id: str) -> Optional[str]:
-    ig_user_id = config.instagram.get("ig_user_id", "")
-    access_token = config.instagram.get("access_token", "")
-
+def _publish_container(
+    container_id: str, ig_user_id: str, access_token: str
+) -> Optional[str]:
     resp = requests.post(
         f"{GRAPH_API_BASE}/{ig_user_id}/media_publish",
         data={"creation_id": container_id, "access_token": access_token},
@@ -145,9 +142,23 @@ def _publish_container(container_id: str) -> Optional[str]:
     return data["id"]
 
 
-def upload_reel(video_path: str, caption: str = "") -> Optional[str]:
+def upload_reel(
+    video_path: str,
+    caption: str = "",
+    ig_user_id: Optional[str] = None,
+    access_token: Optional[str] = None,
+) -> Optional[str]:
     """
     Publish a local video file to Instagram as a Reel.
+
+    Args:
+        video_path: local path to the rendered video file
+        caption: Instagram caption (capped at 2200 chars)
+        ig_user_id: which Instagram Business Account to publish to (see
+            docs/multi-client-publishing.md). Omit to use the single
+            global [instagram].ig_user_id.
+        access_token: that account's access token. Omit to use the
+            single global [instagram].access_token.
 
     Returns the published media's Instagram ID on success, or None on
     failure (logged, never raised past this point so a failed publish
@@ -157,12 +168,13 @@ def upload_reel(video_path: str, caption: str = "") -> Optional[str]:
         logger.error(f"instagram publish failed: file not found: {video_path}")
         return None
 
-    if not config.instagram.get("ig_user_id", "") or not config.instagram.get(
-        "access_token", ""
-    ):
+    ig_user_id = ig_user_id or config.instagram.get("ig_user_id", "")
+    access_token = access_token or config.instagram.get("access_token", "")
+    if not ig_user_id or not access_token:
         logger.error(
-            "instagram publish failed: [instagram].ig_user_id/access_token "
-            "not set in config.toml - see docs/instagram-publishing.md"
+            "instagram publish failed: ig_user_id/access_token not set "
+            "(neither passed explicitly nor in [instagram] config) - "
+            "see docs/instagram-publishing.md"
         )
         return None
 
@@ -175,14 +187,16 @@ def upload_reel(video_path: str, caption: str = "") -> Optional[str]:
     logger.info(f"start instagram publish: {video_path} -> {video_url}")
 
     try:
-        container_id = _create_media_container(video_url, caption)
+        container_id = _create_media_container(
+            video_url, caption, ig_user_id, access_token
+        )
         if not container_id:
             return None
 
-        if not _wait_for_container(container_id):
+        if not _wait_for_container(container_id, access_token):
             return None
 
-        media_id = _publish_container(container_id)
+        media_id = _publish_container(container_id, ig_user_id, access_token)
         if media_id:
             logger.success(f"instagram publish succeeded: media id {media_id}")
         return media_id

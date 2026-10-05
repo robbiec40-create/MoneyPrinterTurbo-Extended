@@ -304,6 +304,39 @@ youtube_privacy_status = "public"
 instagram_auto_publish = true
 # How many recent topics to tell the LLM to avoid repeating
 topic_history_size = 20
+# NOTE: youtube_auto_publish/instagram_auto_publish/youtube_privacy_status
+# above are only used in single-owner mode (scripts/scheduled_video_job.py
+# run with --theme, or no flag). In multi-client mode (--client), each
+# client's own [[clients]] entry controls publishing instead - see below
+# and docs/multi-client-publishing.md.
+
+# Multi-client publishing: each client gets exactly one theme and posts
+# to their OWN YouTube/Instagram accounts (not yours). Add one
+# [[clients]] block per client; run scripts/scheduled_video_job.py with
+# --client <id> (one cron/Railway Cron entry per client) instead of
+# --theme. See docs/multi-client-publishing.md for the full onboarding
+# walkthrough (each client runs their own OAuth setup).
+#
+# [[clients]]
+# id = "client1"                                   # matches --client client1
+# theme = "political satire"
+# youtube_token_file = "credentials/client1_youtube_token.json"
+# youtube_privacy_status = "public"
+# instagram_access_token = "..."
+# instagram_ig_user_id = "..."
+# # Optional per-client overrides - omit any to fall back to [scheduler]'s value:
+# # video_source = "pexels"
+# # voice_name = "en-US-AriaNeural-Female"
+# # video_aspect = "9:16"
+# # paragraph_number = 1
+# # output_resolution_short_side = 750
+#
+# [[clients]]
+# id = "client2"
+# theme = "bedtime stories"
+# youtube_token_file = "credentials/client2_youtube_token.json"
+# instagram_access_token = "..."
+# instagram_ig_user_id = "..."
 
 [ui]
 # UI related settings

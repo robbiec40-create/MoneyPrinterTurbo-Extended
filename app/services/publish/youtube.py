@@ -32,16 +32,23 @@ class YouTubeAuthError(Exception):
     """Raised when the stored OAuth token is missing or invalid."""
 
 
-def _load_credentials():
+def _load_credentials(token_file: Optional[str] = None):
     """
     Load the OAuth credentials saved by scripts/youtube_auth.py, refreshing
     the access token if it has expired. Never starts an interactive login
     flow - this is meant to run unattended on a server.
+
+    Args:
+        token_file: path to a specific client's token.json. If omitted,
+            falls back to the single global [youtube].token_file - this
+            is what keeps the WebUI/single-owner flow (task.py calling
+            upload_video with no token_file) working unchanged under
+            multi-client use (see docs/multi-client-publishing.md).
     """
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
 
-    token_file = config.youtube.get("token_file", "")
+    token_file = token_file or config.youtube.get("token_file", "")
     if not token_file or not os.path.exists(token_file):
         raise YouTubeAuthError(
             f"YouTube token file not found: {token_file!r}. Run "
@@ -74,9 +81,10 @@ def upload_video(
     category_id: str = "22",  # "People & Blogs"; see docs/youtube-publishing.md
     privacy_status: str = "public",
     made_for_kids: bool = False,
+    token_file: Optional[str] = None,
 ) -> Optional[str]:
     """
-    Upload a video file to the authenticated channel.
+    Upload a video file to a YouTube channel.
 
     Args:
         video_path: local path to the rendered video file
@@ -87,6 +95,9 @@ def upload_video(
         privacy_status: "public", "unlisted", or "private"
         made_for_kids: must be set accurately - this is a legal requirement
             under COPPA, not a style choice. Default False.
+        token_file: which channel to upload to - a specific client's
+            token.json (see docs/multi-client-publishing.md). Omit to
+            use the single global [youtube].token_file.
 
     Returns:
         The uploaded video's YouTube ID on success, or None on failure.
@@ -108,7 +119,7 @@ def upload_video(
         return None
 
     try:
-        creds = _load_credentials()
+        creds = _load_credentials(token_file)
     except YouTubeAuthError as e:
         logger.error(f"youtube upload failed: {str(e)}")
         return None

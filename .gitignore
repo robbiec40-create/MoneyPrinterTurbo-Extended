@@ -1,9 +1,11 @@
 .DS_Store
 /config.toml
 
-# YouTube OAuth credentials (see docs/youtube-publishing.md) - never commit these
+# YouTube/Instagram OAuth credentials (see docs/youtube-publishing.md,
+# docs/instagram-publishing.md, docs/multi-client-publishing.md) - never commit these
 client_secret*.json
 /token.json
+/credentials/
 /storage/
 /.idea/
 /app/services/__pycache__

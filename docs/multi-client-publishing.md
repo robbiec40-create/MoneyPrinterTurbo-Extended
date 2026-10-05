@@ -103,8 +103,8 @@ about, since each invocation is a separate process.
 | Tier | Cadence | Price | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
 |---|---|---|---|
 | Basic | 3x/week | $25/mo | One entry: `0 12 * * 1,3,5` |
-| Standard | 1x/day | TBD | One entry: `0 12 * * *` |
-| Pro | 2x/day | TBD | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+| Standard | 1x/day | $55/mo | One entry: `0 12 * * *` |
+| Pro | 2x/day | $89/mo | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
 
 Margin is essentially unaffected by price within this range - variable
 cost per video is a fraction of a cent (see the per-video cost

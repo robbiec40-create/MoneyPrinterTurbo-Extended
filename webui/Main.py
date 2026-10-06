@@ -238,6 +238,10 @@ if not config.app.get("hide_config", False):
                 "Cloudflare",
                 "ERNIE",
                 "Pollinations",
+                "Groq",
+                "OpenRouter",
+                "Mistral",
+                "Together",
             ]
             saved_llm_provider = config.app.get("llm_provider", "OpenAI").lower()
             saved_llm_provider_index = 0
@@ -393,6 +397,28 @@ if not config.app.get("hide_config", False):
                             - **Model Name**: Use 'openai-fast' or specify a model name
                             """
 
+            openai_compatible_tips = {
+                "groq": ("Groq", "https://console.groq.com/keys", "https://api.groq.com/openai/v1", "llama-3.3-70b-versatile"),
+                "openrouter": ("OpenRouter", "https://openrouter.ai/keys", "https://openrouter.ai/api/v1", "openai/gpt-4o-mini"),
+                "mistral": ("Mistral", "https://console.mistral.ai/api-keys", "https://api.mistral.ai/v1", "mistral-small-latest"),
+                "together": ("Together AI", "https://api.together.xyz/settings/api-keys", "https://api.together.xyz/v1", "meta-llama/Llama-3.3-70B-Instruct-Turbo"),
+            }
+            if llm_provider in openai_compatible_tips:
+                name, key_url, default_url, default_model = openai_compatible_tips[
+                    llm_provider
+                ]
+                if not llm_model_name:
+                    llm_model_name = default_model
+                if not llm_base_url:
+                    llm_base_url = default_url
+                with llm_helper:
+                    tips = f"""
+                            ##### {name} Configuration
+                            - **API Key**: [Get one here]({key_url})
+                            - **Base Url**: Default is {default_url}
+                            - **Model Name**: e.g. {default_model}
+                            """
+
             if tips and config.ui["language"] == "zh":
                 st.warning(
                     "中国用户建议使用 **DeepSeek** 或 **Moonshot** 作为大模型提供商\n- 国内可直接访问，不需要VPN \n- 注册就送额度，基本够用"
@@ -462,6 +488,12 @@ if not config.app.get("hide_config", False):
                 tr("Pixabay API Key"), value=pixabay_api_key, type="password"
             )
             save_keys_to_config("pixabay_api_keys", pixabay_api_key)
+
+            coverr_api_key = get_keys_from_config("coverr_api_keys")
+            coverr_api_key = st.text_input(
+                tr("Coverr API Key"), value=coverr_api_key, type="password"
+            )
+            save_keys_to_config("coverr_api_keys", coverr_api_key)
 
 llm_provider = config.app.get("llm_provider", "").lower()
 panel = st.columns(3)
@@ -544,6 +576,7 @@ with middle_panel:
         video_sources = [
             (tr("Pexels"), "pexels"),
             (tr("Pixabay"), "pixabay"),
+            (tr("Coverr"), "coverr"),
             (tr("Local file"), "local"),
             (tr("TikTok"), "douyin"),
             (tr("Bilibili"), "bilibili"),
@@ -837,6 +870,20 @@ with middle_panel:
             options=[1, 2, 3, 4, 5],
             index=0,
         )
+
+        output_resolution_options = [
+            (tr("Native (1080p+)"), None),
+            (tr("Lower (750px short side, faster/smaller)"), 750),
+        ]
+        selected_res_index = st.selectbox(
+            tr("Output Resolution"),
+            options=range(len(output_resolution_options)),
+            format_func=lambda x: output_resolution_options[x][0],
+            index=0,
+        )
+        params.output_resolution_short_side = output_resolution_options[
+            selected_res_index
+        ][1]
         
         # Show warning for multiple videos with semantic mode
         if params.video_count > 1 and params.video_concat_mode.value == "semantic":
@@ -851,6 +898,7 @@ with middle_panel:
             ("azure-tts-v2", "Azure TTS V2"),
             ("siliconflow", "SiliconFlow TTS"),
             ("chatterbox", "Chatterbox TTS (Open Source)"),
+            ("elevenlabs", "ElevenLabs TTS"),
         ]
 
         # 获取保存的TTS服务器，默认为v1
@@ -880,6 +928,9 @@ with middle_panel:
         elif selected_tts_server == "chatterbox":
             # 获取Chatterbox的声音列表
             filtered_voices = voice.get_chatterbox_voices()
+        elif selected_tts_server == "elevenlabs":
+            # 获取ElevenLabs的声音列表
+            filtered_voices = voice.get_elevenlabs_voices()
         else:
             # 获取Azure的声音列表
             all_voices = voice.get_all_azure_voices(filter_locals=None)
@@ -1064,6 +1115,31 @@ with middle_panel:
 
             config.siliconflow["api_key"] = siliconflow_api_key
 
+        # 当选择ElevenLabs时，显示API key输入框和说明信息
+        if selected_tts_server == "elevenlabs" or (
+            voice_name and voice.is_elevenlabs_voice(voice_name)
+        ):
+            saved_elevenlabs_api_key = config.elevenlabs.get("api_key", "")
+
+            elevenlabs_api_key = st.text_input(
+                tr("ElevenLabs API Key"),
+                value=saved_elevenlabs_api_key,
+                type="password",
+                key="elevenlabs_api_key_input",
+            )
+
+            st.info(
+                tr("ElevenLabs TTS Settings")
+                + ":\n"
+                + "- "
+                + tr("Speed: Range [0.7, 1.2], default is 1.0")
+                + "\n"
+                + "- "
+                + tr("Get your API key at https://elevenlabs.io/app/settings/api-keys")
+            )
+
+            config.elevenlabs["api_key"] = elevenlabs_api_key
+
         params.voice_volume = st.selectbox(
             tr("Speech Volume"),
             options=[0.6, 0.8, 1.0, 1.2, 1.5, 2.0, 3.0, 4.0, 5.0],
@@ -1107,6 +1183,60 @@ with middle_panel:
             options=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
             index=2,
         )
+
+    with st.container(border=True):
+        st.write(tr("Publishing"))
+        params.youtube_auto_publish = st.checkbox(
+            tr("Auto-publish to YouTube"), value=False
+        )
+        if params.youtube_auto_publish:
+            st.info(
+                tr("YouTube Publishing Requires Setup")
+                + ": docs/youtube-publishing.md ("
+                + tr("one-time OAuth setup")
+                + ")"
+            )
+            params.youtube_title = st.text_input(
+                tr("YouTube Title"),
+                value="",
+                placeholder=tr("Defaults to Video Subject if empty"),
+            )
+            params.youtube_description = st.text_area(
+                tr("YouTube Description"),
+                value="",
+                placeholder=tr("Defaults to the generated script if empty"),
+            )
+            youtube_tags_input = st.text_input(
+                tr("YouTube Tags (comma-separated)"), value=""
+            )
+            params.youtube_tags = [
+                t.strip() for t in youtube_tags_input.split(",") if t.strip()
+            ] or None
+            privacy_options = ["public", "unlisted", "private"]
+            params.youtube_privacy_status = st.selectbox(
+                tr("YouTube Privacy Status"),
+                options=privacy_options,
+                index=0,
+            )
+            params.youtube_made_for_kids = st.checkbox(
+                tr("Made for Kids (COPPA)"), value=False
+            )
+
+        params.instagram_auto_publish = st.checkbox(
+            tr("Auto-publish to Instagram (Reel)"), value=False
+        )
+        if params.instagram_auto_publish:
+            st.info(
+                tr("Instagram Publishing Requires Setup")
+                + ": docs/instagram-publishing.md ("
+                + tr("one-time setup")
+                + ")"
+            )
+            params.instagram_caption = st.text_area(
+                tr("Instagram Caption"),
+                value="",
+                placeholder=tr("Defaults to Video Subject if empty"),
+            )
 
 with right_panel:
     with st.container(border=True):
@@ -1213,7 +1343,7 @@ if start_button:
         scroll_to_bottom()
         st.stop()
 
-    if params.video_source not in ["pexels", "pixabay", "local"]:
+    if params.video_source not in ["pexels", "pixabay", "coverr", "local"]:
         st.error(tr("Please Select a Valid Video Source"))
         scroll_to_bottom()
         st.stop()
@@ -1225,6 +1355,31 @@ if start_button:
 
     if params.video_source == "pixabay" and not config.app.get("pixabay_api_keys", ""):
         st.error(tr("Please Enter the Pixabay API Key"))
+        scroll_to_bottom()
+        st.stop()
+
+    if params.video_source == "coverr" and not config.app.get("coverr_api_keys", ""):
+        st.error(tr("Please Enter the Coverr API Key"))
+        scroll_to_bottom()
+        st.stop()
+
+    if params.youtube_auto_publish and not config.youtube.get("token_file", ""):
+        st.error(
+            tr("YouTube Auto-publish Enabled but Not Configured")
+            + " - docs/youtube-publishing.md"
+        )
+        scroll_to_bottom()
+        st.stop()
+
+    if params.instagram_auto_publish and (
+        not config.instagram.get("access_token", "")
+        or not config.instagram.get("ig_user_id", "")
+        or not config.app.get("public_base_url", "")
+    ):
+        st.error(
+            tr("Instagram Auto-publish Enabled but Not Configured")
+            + " - docs/instagram-publishing.md"
+        )
         scroll_to_bottom()
         st.stop()
 

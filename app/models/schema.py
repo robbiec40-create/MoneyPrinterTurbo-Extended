@@ -82,6 +82,14 @@ class VideoParams(BaseModel):
     video_clip_duration: Optional[int] = 5
     video_count: Optional[int] = 1
 
+    # Scale the final rendered video's short side (width for portrait,
+    # height for landscape) down to this many pixels, preserving aspect
+    # ratio - e.g. 750 on a 9:16 video exports at 750x1334 instead of the
+    # native 1080x1920. None/0 = export at native resolution (unchanged
+    # default). This only affects the final export, not stock-footage
+    # search/matching, so it doesn't risk breaking Pexels/Pixabay lookups.
+    output_resolution_short_side: Optional[int] = None
+
     video_source: Optional[str] = "pexels"
     video_materials: Optional[List[MaterialInfo]] = (
         None  # Materials used to generate the video
@@ -129,6 +137,21 @@ class VideoParams(BaseModel):
     
     n_threads: Optional[int] = 2
     paragraph_number: Optional[int] = 1
+
+    # YouTube auto-publish settings (see docs/youtube-publishing.md for the
+    # one-time OAuth setup this depends on)
+    youtube_auto_publish: Optional[bool] = False
+    youtube_title: Optional[str] = ""  # falls back to video_subject if empty
+    youtube_description: Optional[str] = ""
+    youtube_tags: Optional[List[str]] = None
+    youtube_privacy_status: Optional[str] = "public"  # "public", "unlisted", "private"
+    youtube_made_for_kids: Optional[bool] = False
+
+    # Instagram auto-publish settings (see docs/instagram-publishing.md).
+    # Instagram Reels have no privacy/unlisted option via the API - a
+    # published Reel is public - and no made_for_kids equivalent.
+    instagram_auto_publish: Optional[bool] = False
+    instagram_caption: Optional[str] = ""  # falls back to video_subject if empty
 
 
 class SubtitleRequest(BaseModel):

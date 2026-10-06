@@ -2,6 +2,7 @@ import math
 import os.path
 import re
 from os import path
+from typing import List, Optional
 
 from loguru import logger
 
@@ -9,6 +10,8 @@ from app.config import config
 from app.models import const
 from app.models.schema import VideoConcatMode, VideoParams
 from app.services import llm, material, subtitle, video, voice
+from app.services.publish import instagram as instagram_publish
+from app.services.publish import youtube as youtube_publish
 from app.services import state as sm
 from app.utils import utils
 
@@ -247,6 +250,58 @@ def generate_final_videos(
     return final_video_paths, combined_video_paths
 
 
+def publish_videos_to_youtube(
+    task_id, params: VideoParams, final_video_paths, video_script: str
+) -> List[Optional[str]]:
+    """
+    Upload each rendered video to YouTube if auto-publish is enabled.
+
+    A failed upload is logged and skipped rather than failing the task -
+    the video was still rendered successfully, so the task result should
+    reflect that even if publishing didn't happen. Returns one entry per
+    video in final_video_paths: the uploaded video's YouTube ID, or None
+    if that upload was skipped/failed.
+    """
+    if not params.youtube_auto_publish:
+        return [None] * len(final_video_paths)
+
+    title = params.youtube_title or params.video_subject
+    description = params.youtube_description or video_script
+
+    youtube_video_ids = []
+    for video_path in final_video_paths:
+        video_id = youtube_publish.upload_video(
+            video_path=video_path,
+            title=title,
+            description=description,
+            tags=params.youtube_tags,
+            privacy_status=params.youtube_privacy_status,
+            made_for_kids=params.youtube_made_for_kids,
+        )
+        youtube_video_ids.append(video_id)
+    return youtube_video_ids
+
+
+def publish_videos_to_instagram(
+    task_id, params: VideoParams, final_video_paths
+) -> List[Optional[str]]:
+    """
+    Publish each rendered video to Instagram as a Reel, if auto-publish is
+    enabled. Same failure handling as publish_videos_to_youtube: a failed
+    publish is logged and skipped, never fails the task.
+    """
+    if not params.instagram_auto_publish:
+        return [None] * len(final_video_paths)
+
+    caption = params.instagram_caption or params.video_subject
+
+    instagram_media_ids = []
+    for video_path in final_video_paths:
+        media_id = instagram_publish.upload_reel(video_path, caption=caption)
+        instagram_media_ids.append(media_id)
+    return instagram_media_ids
+
+
 def start(task_id, params: VideoParams, stop_at: str = "video"):
     logger.info(f"start task: {task_id}, stop_at: {stop_at}")
     sm.state.update_task(task_id, state=const.TASK_STATE_PROCESSING, progress=5)
@@ -353,6 +408,13 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
         f"task {task_id} finished, generated {len(final_video_paths)} videos."
     )
 
+    youtube_video_ids = publish_videos_to_youtube(
+        task_id, params, final_video_paths, video_script
+    )
+    instagram_media_ids = publish_videos_to_instagram(
+        task_id, params, final_video_paths
+    )
+
     kwargs = {
         "videos": final_video_paths,
         "combined_videos": combined_video_paths,
@@ -362,6 +424,8 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
         "audio_duration": audio_duration,
         "subtitle_path": subtitle_path,
         "materials": downloaded_videos,
+        "youtube_video_ids": youtube_video_ids,
+        "instagram_media_ids": instagram_media_ids,
     }
     sm.state.update_task(
         task_id, state=const.TASK_STATE_COMPLETE, progress=100, **kwargs

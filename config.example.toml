@@ -1,5 +1,11 @@
 [app]
-video_source = "pexels" # "pexels" or "pixabay"
+video_source = "pexels" # "pexels", "pixabay" or "coverr"
+
+# Public HTTPS URL this app's FastAPI server (main.py) is reachable at -
+# e.g. your Railway domain. Required for Instagram auto-publish, since
+# Instagram's API fetches the video from a public URL rather than
+# accepting a file upload. See docs/instagram-publishing.md.
+public_base_url = ""
 
 # 是否隐藏配置面板
 hide_config = false
@@ -18,6 +24,17 @@ pexels_api_keys = []
 # 特别注意格式，Key 用英文双引号括起来，多个Key用逗号隔开
 pixabay_api_keys = []
 
+# Coverr API Key
+# Register at https://coverr.co/developers to get your API key.
+# You can use multiple keys to avoid rate limits (free tier is 50 calls/hour).
+# NOTE: the Coverr integration (search_videos_coverr in app/services/material.py)
+# was written against an example API response shown on Coverr's marketing
+# page, not a verified API reference, since their docs site 404s on the
+# actual endpoint docs. Test it before relying on it.
+# For example: coverr_api_keys = ["123adsf4567adf89","abd1321cd13efgfdfhi"]
+# 特别注意格式，Key 用英文双引号括起来，多个Key用逗号隔开
+coverr_api_keys = []
+
 # 支持的提供商 (Supported providers):
 #   openai
 #   moonshot    (月之暗面)
@@ -30,7 +47,7 @@ pixabay_api_keys = []
 #   oneapi
 #   cloudflare
 #   ernie       (文心一言)
-llm_provider = "openai"
+llm_provider = "ollama"
 
 ########## Pollinations AI Settings
 # Visit https://pollinations.ai/ to learn more
@@ -42,10 +59,19 @@ pollinations_base_url = "https://pollinations.ai/api/v1"
 pollinations_model_name = "openai-fast"
 
 ########## Ollama Settings
-# No need to set it unless you want to use your own proxy
-ollama_base_url = ""
-# Check your available models at https://ollama.com/library
-ollama_model_name = ""
+# The $0/mo LLM option: Ollama runs as its own Railway service in your
+# same project (official one-click template), so this is Railway
+# compute you're already paying for, not a separate API bill - see
+# docs/ollama-setup.md for the full setup.
+#
+# Railway's private network reaches other services in the same project
+# at "<service-name>.railway.internal" - replace "ollama" below with
+# whatever you actually named the Ollama service if different.
+ollama_base_url = "http://ollama.railway.internal:11434/v1"
+# llama3.2:1b - smallest/cheapest model that's still usable for short
+# video scripts. See docs/ollama-setup.md for the RAM-vs-quality
+# tradeoff if 1b's output quality isn't good enough.
+ollama_model_name = "llama3.2:1b"
 
 ########## OpenAI API Key
 # Get your API key at https://platform.openai.com/api-keys
@@ -98,6 +124,30 @@ qwen_model_name = "qwen-max"
 deepseek_api_key = ""
 deepseek_base_url = "https://api.deepseek.com"
 deepseek_model_name = "deepseek-chat"
+
+########## Groq API Key
+# Visit https://console.groq.com/keys to get your API key
+groq_api_key = ""
+groq_base_url = "https://api.groq.com/openai/v1"
+groq_model_name = "llama-3.3-70b-versatile"
+
+########## OpenRouter API Key
+# Visit https://openrouter.ai/keys to get your API key
+openrouter_api_key = ""
+openrouter_base_url = "https://openrouter.ai/api/v1"
+openrouter_model_name = "openai/gpt-4o-mini"
+
+########## Mistral API Key
+# Visit https://console.mistral.ai/api-keys to get your API key
+mistral_api_key = ""
+mistral_base_url = "https://api.mistral.ai/v1"
+mistral_model_name = "mistral-small-latest"
+
+########## Together AI API Key
+# Visit https://api.together.xyz/settings/api-keys to get your API key
+together_api_key = ""
+together_base_url = "https://api.together.xyz/v1"
+together_model_name = "meta-llama/Llama-3.3-70B-Instruct-Turbo"
 
 # Subtitle Provider, "edge" or "whisper"
 # If empty, the subtitle will not be generated
@@ -212,6 +262,98 @@ speech_region = ""
 # SiliconFlow API Key
 # Get your API key at https://siliconflow.cn
 api_key = ""
+
+[elevenlabs]
+# ElevenLabs API Key
+# Get your API key at https://elevenlabs.io/app/settings/api-keys
+api_key = ""
+
+[youtube]
+# Auto-publishing a finished video to YouTube. See docs/youtube-publishing.md
+# for the full one-time setup (Google Cloud OAuth app + scripts/youtube_auth.py).
+# Both files below are produced by that setup, not written by hand.
+#
+# On Railway, these paths are where start.sh writes the YOUTUBE_CLIENT_SECRET_JSON/
+# YOUTUBE_TOKEN_JSON env vars at container boot (see docs/youtube-publishing.md's
+# Railway section) - the paths themselves aren't secret, only the env vars are.
+# For a non-Railway/local deployment, point these at wherever you copied the two
+# files from scripts/youtube_auth.py's output instead.
+client_secrets_file = "/MoneyPrinterTurbo/credentials/youtube_client_secret.json"
+token_file = "/MoneyPrinterTurbo/credentials/youtube_token.json"
+
+[instagram]
+# Auto-publishing a finished video to Instagram as a Reel. See
+# docs/instagram-publishing.md for the full one-time setup
+# (Meta app + Business account + scripts/instagram_auth.py).
+# Both values below come from that setup, not written by hand.
+# NOTE: unlike youtube's token.json, this access_token expires after
+# ~60 days and needs to be refreshed periodically by re-running
+# scripts/instagram_auth.py.
+access_token = ""
+ig_user_id = ""  # Instagram Business Account ID
+
+[scheduler]
+# Defaults for scripts/scheduled_video_job.py - a fully unattended run
+# that picks its own topic and generates + publishes a video with no
+# human input. See docs/scheduled-publishing.md for how to actually
+# schedule it (Railway Cron Job, OS cron, etc.) - this section only
+# configures what each run does, not when it runs.
+#
+# `theme` here is just the fallback when no --theme CLI argument is
+# given. Running 3 themes (e.g. political satire / educational /
+# bedtime stories) each on their own 3x/week cadence means 3 separate
+# cron schedules all pointing at this same script with their own
+# --theme argument - see docs/scheduled-publishing.md.
+theme = "political satire"
+video_source = "pexels"
+# en-US-AriaNeural-Female = free Edge TTS (no API key, no per-character
+# cost) - deliberately NOT an elevenlabs:... voice, to keep this $0/mo.
+# See docs/scheduled-publishing.md's cost note if you want ElevenLabs'
+# better voice quality instead, for ~$5/mo.
+voice_name = "en-US-AriaNeural-Female"
+video_aspect = "9:16"  # portrait; see VideoAspect in app/models/schema.py
+paragraph_number = 1
+output_resolution_short_side = 750  # see [app] docs above; None/0 = native 1080p+
+youtube_auto_publish = true
+youtube_privacy_status = "public"
+instagram_auto_publish = true
+# How many recent topics to tell the LLM to avoid repeating
+topic_history_size = 20
+# NOTE: youtube_auto_publish/instagram_auto_publish/youtube_privacy_status
+# above are only used in single-owner mode (scripts/scheduled_video_job.py
+# run with --theme, or no flag). In multi-client mode (--client), each
+# client's own [[clients]] entry controls publishing instead - see below
+# and docs/multi-client-publishing.md.
+
+# Multi-client publishing: each client gets exactly one theme and posts
+# to their OWN YouTube/Instagram accounts (not yours). Add one
+# [[clients]] block per client; run scripts/scheduled_video_job.py with
+# --client <id> (one cron/Railway Cron entry per client) instead of
+# --theme. See docs/multi-client-publishing.md for the full onboarding
+# walkthrough (each client runs their own OAuth setup).
+#
+# [[clients]]
+# id = "client1"                                   # matches --client client1
+# theme = "political satire"
+# videos_per_day = 0.43  # informational only (3/week) - see docs/multi-client-publishing.md
+# monthly_price_usd = 19  # informational only - what this client pays you per month (Starter Plan)
+# youtube_token_file = "credentials/client1_youtube_token.json"
+# youtube_privacy_status = "public"
+# instagram_access_token = "..."
+# instagram_ig_user_id = "..."
+# # Optional per-client overrides - omit any to fall back to [scheduler]'s value:
+# # video_source = "pexels"
+# # voice_name = "en-US-AriaNeural-Female"
+# # video_aspect = "9:16"
+# # paragraph_number = 1
+# # output_resolution_short_side = 750
+#
+# [[clients]]
+# id = "client2"
+# theme = "bedtime stories"
+# youtube_token_file = "credentials/client2_youtube_token.json"
+# instagram_access_token = "..."
+# instagram_ig_user_id = "..."
 
 [ui]
 # UI related settings

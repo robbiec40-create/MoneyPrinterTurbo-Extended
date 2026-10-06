@@ -37,6 +37,7 @@ def save_config():
         _cfg["app"] = app
         _cfg["azure"] = azure
         _cfg["siliconflow"] = siliconflow
+        _cfg["elevenlabs"] = elevenlabs
         _cfg["ui"] = ui
         f.write(toml.dumps(_cfg))
 
@@ -47,6 +48,11 @@ whisper = _cfg.get("whisper", {})
 proxy = _cfg.get("proxy", {})
 azure = _cfg.get("azure", {})
 siliconflow = _cfg.get("siliconflow", {})
+elevenlabs = _cfg.get("elevenlabs", {})
+youtube = _cfg.get("youtube", {})
+instagram = _cfg.get("instagram", {})
+scheduler = _cfg.get("scheduler", {})
+clients = _cfg.get("clients", [])  # list of dicts; see app/services/clients.py
 ui = _cfg.get(
     "ui",
     {
@@ -58,7 +64,9 @@ hostname = socket.gethostname()
 
 log_level = _cfg.get("log_level", "DEBUG")
 listen_host = _cfg.get("listen_host", "0.0.0.0")
-listen_port = _cfg.get("listen_port", 8080)
+# PaaS platforms such as Railway assign a dynamic port via the $PORT env
+# var and expect the app to bind it, so prefer that over config.toml when set.
+listen_port = int(os.environ.get("PORT", _cfg.get("listen_port", 8080)))
 project_name = _cfg.get("project_name", "MoneyPrinterTurbo")
 project_description = _cfg.get(
     "project_description",

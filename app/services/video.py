@@ -986,6 +986,23 @@ def generate_video(
             logger.error(f"failed to add bgm: {str(e)}")
 
     video_clip = video_clip.with_audio(audio_clip)
+
+    if params.output_resolution_short_side:
+        # Resize the fully-composited clip (video + subtitle overlays)
+        # uniformly, after all text positions/sizes were computed against
+        # the native video_width/video_height above - this scales
+        # everything down together rather than re-laying-out text at a
+        # different size.
+        short_native = min(video_width, video_height)
+        scale = params.output_resolution_short_side / short_native
+        out_w = int(round(video_width * scale / 2) * 2)
+        out_h = int(round(video_height * scale / 2) * 2)
+        logger.info(
+            f"scaling output to {out_w}x{out_h} "
+            f"(output_resolution_short_side={params.output_resolution_short_side})"
+        )
+        video_clip = video_clip.resized(new_size=(out_w, out_h))
+
     video_clip.write_videofile(
         output_file,
         audio_codec=audio_codec,

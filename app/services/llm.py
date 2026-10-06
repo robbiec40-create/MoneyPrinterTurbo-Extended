@@ -2,7 +2,7 @@ import json
 import logging
 import re
 import requests
-from typing import List
+from typing import List, Optional
 
 import g4f
 from loguru import logger
@@ -12,6 +12,17 @@ from openai.types.chat import ChatCompletion
 from app.config import config
 
 _max_retries = 5
+
+# OpenAI-compatible providers: name -> (default base_url, default model_name)
+_OPENAI_COMPATIBLE_PROVIDERS = {
+    "groq": ("https://api.groq.com/openai/v1", "llama-3.3-70b-versatile"),
+    "openrouter": ("https://openrouter.ai/api/v1", "openai/gpt-4o-mini"),
+    "mistral": ("https://api.mistral.ai/v1", "mistral-small-latest"),
+    "together": (
+        "https://api.together.xyz/v1",
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+    ),
+}
 
 
 def _generate_response(prompt: str) -> str:
@@ -74,6 +85,13 @@ def _generate_response(prompt: str) -> str:
                 base_url = config.app.get("deepseek_base_url")
                 if not base_url:
                     base_url = "https://api.deepseek.com"
+            elif llm_provider in _OPENAI_COMPATIBLE_PROVIDERS:
+                default_base_url, default_model = _OPENAI_COMPATIBLE_PROVIDERS[
+                    llm_provider
+                ]
+                api_key = config.app.get(f"{llm_provider}_api_key")
+                model_name = config.app.get(f"{llm_provider}_model_name") or default_model
+                base_url = config.app.get(f"{llm_provider}_base_url") or default_base_url
             elif llm_provider == "ernie":
                 api_key = config.app.get("ernie_api_key")
                 secret_key = config.app.get("ernie_secret_key")
@@ -427,6 +445,63 @@ Please note that you must use English for generating video search terms; Chinese
 
     logger.success(f"completed: \n{search_terms}")
     return search_terms
+
+
+def generate_topic_idea(theme: str, avoid_topics: Optional[List[str]] = None) -> str:
+    """
+    Ask the LLM for a single, specific video topic/subject within a
+    theme - for unattended/scheduled video generation, where nobody is
+    typing in a video_subject by hand each run.
+
+    Args:
+        theme: a broad theme, e.g. "political satire"
+        avoid_topics: recently used topics to steer away from repeating
+
+    Returns:
+        A short topic string suitable for passing straight into
+        generate_script() as video_subject, or an "Error: ..." string on
+        failure (same convention as _generate_response).
+    """
+    avoid_section = ""
+    if avoid_topics:
+        recent = "\n".join(f"- {t}" for t in avoid_topics)
+        avoid_section = f"""
+## Recently covered topics - do not repeat these or anything too similar:
+{recent}
+"""
+
+    prompt = f"""
+# Role: Video Topic Idea Generator
+
+## Goals:
+Come up with ONE specific, concrete video topic/subject within the given
+theme, suitable as the subject of a short faceless video.
+
+## Constrains:
+1. Return ONLY the topic itself as a single short sentence or phrase -
+   no preamble, no quotes, no markdown, no explanation.
+2. It must be specific enough to write a focused script about, not a
+   vague restatement of the theme.
+3. Do not reference this prompt or the fact that you are an AI.
+
+## Theme:
+{theme}
+{avoid_section}
+""".strip()
+
+    for i in range(_max_retries):
+        response = _generate_response(prompt)
+        if "Error: " in response:
+            logger.error(f"failed to generate topic idea: {response}")
+            return response
+        topic = response.strip().strip('"').strip()
+        if topic:
+            logger.success(f"generated topic idea: {topic}")
+            return topic
+        if i < _max_retries:
+            logger.warning(f"empty topic idea, trying again... {i + 1}")
+
+    return "Error: failed to generate a topic idea after retries"
 
 
 if __name__ == "__main__":

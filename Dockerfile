@@ -1,5 +1,9 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim-bullseye
+# Use an official Python runtime as a parent image.
+# bookworm (Debian 12), not bullseye (Debian 11) - bullseye's
+# debian-security repo has aged out of the live Debian mirrors, so
+# `apt-get install` 404s on every package (see PR discussion for the
+# build log that caught this).
+FROM python:3.11-slim-bookworm
 
 # Set the working directory in the container
 WORKDIR /MoneyPrinterTurbo
@@ -28,11 +32,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Now copy the rest of the codebase into the image
 COPY . .
 
+RUN chmod +x start.sh
+
 # Expose the port the app runs on
 EXPOSE 8501
 
-# Command to run the application
-CMD ["streamlit", "run", "./webui/Main.py","--browser.serverAddress=127.0.0.1","--server.enableCORS=True","--browser.gatherUsageStats=False"]
+# Command to run the application.
+# start.sh honors $PORT and $SERVICE (webui|api), which Railway and other
+# PaaS platforms rely on; docker-compose overrides this with explicit
+# commands for its webui/api services, so this default only affects a plain
+# `docker run` or a platform that doesn't set its own start command.
+CMD ["./start.sh"]
 
 # 1. Build the Docker image using the following command
 # docker build -t moneyprinterturbo .

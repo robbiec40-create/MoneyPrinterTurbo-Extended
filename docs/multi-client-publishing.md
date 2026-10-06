@@ -104,7 +104,7 @@ about, since each invocation is a separate process.
 |---|---|---|---|---|
 | Starter Plan | every other day (~15-16/mo, varies by month length) | $19/mo | **$13/mo** | One entry: `0 12 1-31/2 * *` (odd calendar days - see note below on month-boundary behavior) |
 | Creator Plan | 1x/day (~30/mo) | $30/mo (not yet updated in Stripe - still charges $39 live) | **$24/mo** | One entry: `0 12 * * *` |
-| Pro | 2x/day | $55/mo (no Stripe product yet) | **$40/mo** (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+| Pro | 2x/day | $50/mo (no Stripe product yet) | **$40/mo** (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
 | Studio | 3x/day (~90/mo) | $90/mo (no Stripe product yet) | not set - see note below | Three entries, spaced through the day: `0 12 * * *`, `0 20 * * *`, `0 4 * * *` (8am, 4pm, and midnight ET) |
 
 **Studio's annual price isn't set**: Faceless.video's own equivalent
@@ -128,7 +128,7 @@ live - the Stripe product still charges $39 until it's updated there**
 (this doc can't update Stripe itself - see the Stripe section
 earlier in this conversation for why). Creator undercuts
 Faceless.video's Daily ($35) by $5; Pro undercuts their Double ($59)
-by $4; annual prices undercut their annual
+by $9; annual prices undercut their annual
 rates by at least $1/mo (their Starter $14, Daily $25, Double $41) -
 both are direct competitor undercuts, not independently-derived
 discounts. Neither the Pro tier nor any annual price has a live

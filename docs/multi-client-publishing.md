@@ -102,15 +102,18 @@ about, since each invocation is a separate process.
 
 | Tier | Cadence | Price | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
 |---|---|---|---|
-| Basic | 3x/week | $25/mo | One entry: `0 12 * * 1,3,5` |
-| Standard | 1x/day | $55/mo | One entry: `0 12 * * *` |
-| Pro | 2x/day | $89/mo | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+| Starter Plan | 3x/week | $19/mo | One entry: `0 12 * * 1,3,5` |
+| Creator Plan | 1x/day | $39/mo | One entry: `0 12 * * *` |
+| Pro | 2x/day | $89/mo (unconfirmed - no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
 
 Margin is essentially unaffected by price within this range - variable
 cost per video is a fraction of a cent (see the per-video cost
-breakdown discussed when this pricing was set), so $25 vs $35 for the
-Basic tier is a competitiveness decision, not a cost one. Fill in
-Standard/Pro pricing here once decided, and record it per-client via
+breakdown discussed when this pricing was set) - so these prices are a
+competitiveness decision (matching/undercutting AutoShorts.ai's $19 for
+the same volume), not a cost one. Confirmed from the live Stripe
+Payment Link: Starter Plan is $19/mo, Creator Plan is $39/mo. Pro tier
+pricing/naming hasn't been set up in Stripe yet - fill it in here once
+it exists, and record each client's actual price via
 `monthly_price_usd` in that client's `[[clients]]` block.
 
 For Railway, each entry is its own Cron Job service (all pointing at

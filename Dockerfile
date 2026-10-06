@@ -1,5 +1,9 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim-bullseye
+# Use an official Python runtime as a parent image.
+# bookworm (Debian 12), not bullseye (Debian 11) - bullseye's
+# debian-security repo has aged out of the live Debian mirrors, so
+# `apt-get install` 404s on every package (see PR discussion for the
+# build log that caught this).
+FROM python:3.11-slim-bookworm
 
 # Set the working directory in the container
 WORKDIR /MoneyPrinterTurbo

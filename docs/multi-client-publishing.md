@@ -105,6 +105,13 @@ about, since each invocation is a separate process.
 | Starter Plan | every other day (~15-16/mo, varies by month length) | $19/mo | **$13/mo** | One entry: `0 12 1-31/2 * *` (odd calendar days - see note below on month-boundary behavior) |
 | Creator Plan | 1x/day (~30/mo) | $30/mo (not yet updated in Stripe - still charges $39 live) | **$24/mo** | One entry: `0 12 * * *` |
 | Pro | 2x/day | $55/mo (no Stripe product yet) | **$40/mo** (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+| Studio | 3x/day (~90/mo) | $90/mo (no Stripe product yet) | not set - see note below | Three entries, spaced through the day: `0 12 * * *`, `0 20 * * *`, `0 4 * * *` (8am, 4pm, and midnight ET) |
+
+**Studio's annual price isn't set**: Faceless.video's own equivalent
+top tier (Studio, 175 videos/mo) is monthly-only - no annual option
+exists there to undercut, per their pricing page ("available as a
+monthly subscription"). Rather than invent a number with no basis, this
+is left unset until you decide on one.
 
 **Starter's "every other day" cron note**: `1-31/2` fires on odd
 calendar days (1, 3, 5, ... 31), which isn't a perfect alternation

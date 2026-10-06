@@ -102,20 +102,26 @@ about, since each invocation is a separate process.
 
 | Tier | Cadence | Monthly price | Annual price (billed yearly) | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
 |---|---|---|---|---|
-| Starter Plan | ~17 videos/mo (4x/week) | $19/mo | **$13/mo** | One entry: `0 12 * * 1,2,4,6` (Mon/Tue/Thu/Sat) |
-| Creator Plan | 1x/day | $33/mo (not yet updated in Stripe - still charges $39 live) | **$24/mo** | One entry: `0 12 * * *` |
-| Pro | 2x/day | $57/mo (no Stripe product yet) | **$40/mo** (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+| Starter Plan | every other day (~15-16/mo, varies by month length) | $19/mo | **$13/mo** | One entry: `0 12 1-31/2 * *` (odd calendar days - see note below on month-boundary behavior) |
+| Creator Plan | 1x/day (~30/mo) | $30/mo (not yet updated in Stripe - still charges $39 live) | **$24/mo** | One entry: `0 12 * * *` |
+| Pro | 2x/day | $55/mo (no Stripe product yet) | **$40/mo** (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+
+**Starter's "every other day" cron note**: `1-31/2` fires on odd
+calendar days (1, 3, 5, ... 31), which isn't a perfect alternation
+across month boundaries - e.g. Jan 31 and Feb 1 both fire (two days in
+a row), since both are odd. It's a close approximation of "every other
+day," not mathematically exact at month edges.
 
 Margin is essentially unaffected by price within this range - variable
 cost per video is a fraction of a cent (see the per-video cost
 breakdown discussed when this pricing was set) - so these prices are a
 competitiveness decision, not a cost one. **Starter's $19/mo is
-confirmed live in Stripe; Creator's target price ($33) is NOT yet
+confirmed live in Stripe; Creator's target price ($30) is NOT yet
 live - the Stripe product still charges $39 until it's updated there**
 (this doc can't update Stripe itself - see the Stripe section
-earlier in this conversation for why). Creator and Pro's monthly
-prices ($33, $57) undercut Faceless.video's own monthly rates by $2
-(their Daily $35, Double $59); annual prices undercut their annual
+earlier in this conversation for why). Creator undercuts
+Faceless.video's Daily ($35) by $5; Pro undercuts their Double ($59)
+by $4; annual prices undercut their annual
 rates by at least $1/mo (their Starter $14, Daily $25, Double $41) -
 both are direct competitor undercuts, not independently-derived
 discounts. Neither the Pro tier nor any annual price has a live

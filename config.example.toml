@@ -272,8 +272,14 @@ api_key = ""
 # Auto-publishing a finished video to YouTube. See docs/youtube-publishing.md
 # for the full one-time setup (Google Cloud OAuth app + scripts/youtube_auth.py).
 # Both files below are produced by that setup, not written by hand.
-client_secrets_file = ""  # path to client_secret.json from Google Cloud Console
-token_file = ""           # path to token.json produced by scripts/youtube_auth.py
+#
+# On Railway, these paths are where start.sh writes the YOUTUBE_CLIENT_SECRET_JSON/
+# YOUTUBE_TOKEN_JSON env vars at container boot (see docs/youtube-publishing.md's
+# Railway section) - the paths themselves aren't secret, only the env vars are.
+# For a non-Railway/local deployment, point these at wherever you copied the two
+# files from scripts/youtube_auth.py's output instead.
+client_secrets_file = "/MoneyPrinterTurbo/credentials/youtube_client_secret.json"
+token_file = "/MoneyPrinterTurbo/credentials/youtube_token.json"
 
 [instagram]
 # Auto-publishing a finished video to Instagram as a Reel. See

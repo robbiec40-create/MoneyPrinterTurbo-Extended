@@ -151,10 +151,12 @@ at zero per-video API cost:
   than the ~$5/mo.
 - **LLM** (`generate_topic_idea`/`generate_script`): controlled by the
   global `[app].llm_provider` setting, not `[scheduler]` - this script
-  doesn't override it. For $0 cost, point it at `ollama` (self-hosted,
-  free, but needs compute to run the model) or `g4f` (free, unofficial,
-  less reliable) rather than a metered provider like `openai`/`groq`/
-  `mistral`/etc.
+  doesn't override it. Defaults to `ollama` (self-hosted, running as
+  its own Railway service in your project - see
+  `docs/ollama-setup.md`), so this is Railway compute you're already
+  paying for, not a separate bill. `g4f` is the other $0 option but
+  unofficial and less reliable - see `docs/ollama-setup.md` for why
+  Ollama is the one configured by default here.
 - **Stock footage** (Pexels/Pixabay/Coverr): already free-tier, no
   change needed.
 

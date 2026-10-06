@@ -102,7 +102,7 @@ about, since each invocation is a separate process.
 
 | Tier | Cadence | Monthly price | Annual price (billed yearly) | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
 |---|---|---|---|---|
-| Starter Plan | ~16 videos/mo (4x/week - no clean weekly cadence lands exactly on 16, this is the closest) | $19/mo | **$13/mo** | One entry: `0 12 * * 1,2,4,6` (Mon/Tue/Thu/Sat, ~17/mo) |
+| Starter Plan | ~17 videos/mo (4x/week) | $19/mo | **$13/mo** | One entry: `0 12 * * 1,2,4,6` (Mon/Tue/Thu/Sat) |
 | Creator Plan | 1x/day | $33/mo (not yet updated in Stripe - still charges $39 live) | **$24/mo** | One entry: `0 12 * * *` |
 | Pro | 2x/day | $57/mo (no Stripe product yet) | **$40/mo** (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
 

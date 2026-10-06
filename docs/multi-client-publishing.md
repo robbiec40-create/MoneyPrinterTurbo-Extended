@@ -102,18 +102,17 @@ about, since each invocation is a separate process.
 
 | Tier | Cadence | Monthly price | Annual price (billed yearly) | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
 |---|---|---|---|---|
-| Starter Plan | every other day (~15-16/mo, varies by month length) | $19/mo (live in Stripe) | **$13/mo** (no Stripe product yet) | One entry: `0 12 1-31/2 * *` (odd calendar days - see note below on month-boundary behavior) |
-| Creator Plan | 1x/day (~30/mo) | $30/mo (live in Stripe) | **$24/mo** (no Stripe product yet) | One entry: `0 12 * * *` |
-| Pro | 2x/day | $50/mo (live in Stripe) | **$40/mo** (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+| Starter Plan | every other day (~15-16/mo, varies by month length) | $19/mo (live in Stripe) | **$13/mo** ($156/yr, live in Stripe) | One entry: `0 12 1-31/2 * *` (odd calendar days - see note below on month-boundary behavior) |
+| Creator Plan | 1x/day (~30/mo) | $30/mo (live in Stripe) | **$24/mo** ($288/yr, live in Stripe) | One entry: `0 12 * * *` |
+| Pro | 2x/day | $50/mo (live in Stripe) | **$40/mo** ($480/yr, live in Stripe) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
 | Studio | 3x/day (~90/mo) | $90/mo (live in Stripe) | not set - see note below | Three entries, spaced through the day: `0 12 * * *`, `0 20 * * *`, `0 4 * * *` (8am, 4pm, and midnight ET) |
 
-All four tiers now have a live Stripe product/price for the monthly
-amount above. **None of the four have an annual price in Stripe yet**
-- only the monthly recurring price exists for each - so annual billing
-isn't actually sellable yet even though the target annual numbers are
-decided below. Studio additionally has no annual *target* decided (see
-next paragraph), so it needs a target price chosen before it needs a
-Stripe price created.
+All four tiers have a live monthly Stripe price, and Starter, Creator,
+and Pro now also have a live **annual** Stripe price (billed once a
+year as a single `interval: year` charge - $156/$288/$480 respectively
+- not 12 separate $13/$24/$40 monthly charges). Studio has no annual
+price yet because it has no annual *target* decided (see next
+paragraph) - create one once you pick a number.
 
 **Studio's annual price isn't set**: Faceless.video's own equivalent
 top tier (Studio, 175 videos/mo) is monthly-only - no annual option
@@ -136,11 +135,11 @@ Faceless.video's Daily ($35) by $5; Pro undercuts their Double ($59)
 by $9; the annual targets below undercut their annual
 rates by at least $1/mo (their Starter $14, Daily $25, Double $41) -
 both are direct competitor undercuts, not independently-derived
-discounts. **No annual price has a live Stripe product yet** - create
-one for each tier (Starter $13/mo, Creator $24/mo, Pro $40/mo, Studio
-still undecided) once you're ready to sell annual billing, and record
-each client's actual price (and whether they're on monthly or annual
-billing) via `monthly_price_usd` in that client's `[[clients]]` block.
+discounts. **Starter, Creator, and Pro annual prices are now live in
+Stripe** ($156/$288/$480 per year); only Studio's annual price remains
+to be created, once a target number is chosen. Record each client's
+actual price (and whether they're on monthly or annual billing) via
+`monthly_price_usd` in that client's `[[clients]]` block.
 
 For Railway, each entry is its own Cron Job service (all pointing at
 this same client's `--client <id>` Start Command). For OS cron, they're

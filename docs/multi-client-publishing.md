@@ -104,7 +104,7 @@ about, since each invocation is a separate process.
 |---|---|---|---|
 | Starter Plan | 3x/week | $19/mo | One entry: `0 12 * * 1,3,5` |
 | Creator Plan | 1x/day | $39/mo | One entry: `0 12 * * *` |
-| Pro | 2x/day | $89/mo (unconfirmed - no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+| Pro | 2x/day | $79/mo (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
 
 Margin is essentially unaffected by price within this range - variable
 cost per video is a fraction of a cent (see the per-video cost

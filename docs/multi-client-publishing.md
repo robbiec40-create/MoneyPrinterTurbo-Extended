@@ -100,21 +100,25 @@ correctly avoids repeating what the 1st through (N-1)th runs already
 picked - there's no in-memory state carried between runs to worry
 about, since each invocation is a separate process.
 
-| Tier | Cadence | Price | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
-|---|---|---|---|
-| Starter Plan | 3x/week | $19/mo | One entry: `0 12 * * 1,3,5` |
-| Creator Plan | 1x/day | $39/mo | One entry: `0 12 * * *` |
-| Pro | 2x/day | $79/mo (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
+| Tier | Cadence | Monthly price | Annual price (billed yearly) | Cron entries (8am ET example, i.e. `12:00 UTC` now - see the EDT/EST note in `docs/scheduled-publishing.md`) |
+|---|---|---|---|---|
+| Starter Plan | ~16 videos/mo (4x/week - no clean weekly cadence lands exactly on 16, this is the closest) | $19/mo | **$13/mo** | One entry: `0 12 * * 1,2,4,6` (Mon/Tue/Thu/Sat, ~17/mo) |
+| Creator Plan | 1x/day | $39/mo | **$24/mo** | One entry: `0 12 * * *` |
+| Pro | 2x/day | $79/mo (no Stripe product yet) | **$40/mo** (no Stripe product yet) | Two entries, spaced through the day, e.g. `0 12 * * *` and `0 0 * * *` (8am and 8pm ET) |
 
 Margin is essentially unaffected by price within this range - variable
 cost per video is a fraction of a cent (see the per-video cost
 breakdown discussed when this pricing was set) - so these prices are a
-competitiveness decision (matching/undercutting AutoShorts.ai's $19 for
-the same volume), not a cost one. Confirmed from the live Stripe
-Payment Link: Starter Plan is $19/mo, Creator Plan is $39/mo. Pro tier
-pricing/naming hasn't been set up in Stripe yet - fill it in here once
-it exists, and record each client's actual price via
-`monthly_price_usd` in that client's `[[clients]]` block.
+competitiveness decision, not a cost one. Monthly prices are
+confirmed from the live Stripe Payment Link (Starter $19, Creator
+$39); annual prices are deliberately set at least $1/mo below
+Faceless.video's own annual rates for the same volume (their Starter
+$14, Daily $25, Double $41) - a direct competitor undercut, not an
+independently-derived discount. Neither the Pro tier nor any annual
+price has a live Stripe product yet - fill them in here once they
+exist, and record each client's actual price (and whether they're on
+monthly or annual billing) via `monthly_price_usd` in that client's
+`[[clients]]` block.
 
 For Railway, each entry is its own Cron Job service (all pointing at
 this same client's `--client <id>` Start Command). For OS cron, they're
